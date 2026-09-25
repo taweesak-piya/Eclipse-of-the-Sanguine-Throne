@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Eclipse of the Sanguine Throne - Metroidvania × Castle Architect</title>
+    <meta name="description" content="Castlevania: Symphony of the Night precision 2D combat meets Clash of Clans castle defense and asynchronous raiding." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩸</text></svg>" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- CRT & Scanline Ambience Overlay -->
+      <div id="crt-overlay" class="crt-overlay"></div>
+
+      <!-- Top Header Navigation & Lord Identity -->
+      <header class="top-header">
+        <div class="logo-group">
+          <div class="logo-icon">🩸</div>
+          <div>
+            <div class="logo-title">ECLIPSE OF THE SANGUINE THRONE</div>
+            <div class="logo-sub">Metroidvania × Asynchronous Base Raiding</div>
+          </div>
+        </div>
+
+        <nav class="mode-nav">
+          <button class="mode-btn active" data-mode="architect" id="nav-architect">
+            <span>🏰</span> ARCHITECT VIEW
+          </button>
+          <button class="mode-btn" data-mode="validation" id="nav-validation">
+            <span>🛡️</span> PROOF OF VICTORY
+          </button>
+          <button class="mode-btn" data-mode="raid" id="nav-raid">
+            <span>⚔️</span> RAID INFILTRATION
+          </button>
+        </nav>
+
+        <div class="utility-group">
+          <button class="icon-btn" id="btn-sound-toggle" title="Toggle Sound / BGM">🔊</button>
+          <button class="icon-btn" id="btn-crt-toggle" title="Toggle CRT Scanline Filter">📺</button>
+        </div>
+      </header>
+
+      <!-- Phaser 3 Canvas Mount -->
+      <div id="phaser-game"></div>
+
+      <!-- In-Game HUD Layer (Raid / Validation Mode) -->
+      <div id="hud-layer" class="hud-layer" style="display: none;">
+        <!-- Player Vitality Card -->
+        <div class="player-status-card">
+          <div class="bar-row">
+            <span class="bar-label">HP</span>
+            <div class="bar-track">
+              <div id="hp-fill" class="bar-fill hp-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">MP</span>
+            <div class="bar-track">
+              <div id="mp-fill" class="bar-fill mp-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+          <div class="hearts-row">
+            <span id="hearts-count">♥ × 25</span>
+            <span style="color: #6a6475; font-size: 10px;">| DOUBLE JUMP: ON</span>
+          </div>
+        </div>
+
+        <!-- Raid Objectives & Timer Card -->
+        <div class="raid-objective-card">
+          <div id="timer-display" class="timer-display">04:00</div>
+          <div id="stars-display" class="stars-display">☆☆☆</div>
+        </div>
+      </div>
+
+      <!-- Castle Architect Bottom Toolbar (Build Mode) -->
+      <div id="architect-toolbar" class="architect-toolbar">
+        <div class="budget-meter-row">
+          <span>🏰 CASTLE DEFENSE CAPACITY</span>
+          <div class="budget-bar-track">
+            <div id="budget-fill" class="budget-bar-fill" style="width: 65%;"></div>
+          </div>
+          <span id="budget-value-text">195 / 300 Pts</span>
+        </div>
+
+        <!-- Palettes -->
+        <div class="tools-row">
+          <button class="tool-btn active" data-tool="tile_solid" title="Solid Stone Wall">
+            <span class="tool-icon">🧱</span>
+            <span class="tool-name">Stone Wall</span>
+            <span class="tool-cost">1 pt</span>
+          </button>
+          <button class="tool-btn" data-tool="tile_platform" title="Carved One-Way Platform">
+            <span class="tool-icon">🪜</span>
+            <span class="tool-name">Platform</span>
+            <span class="tool-cost">2 pts</span>
+          </button>
+          <button class="tool-btn" data-tool="tile_spike" title="Blood-Stained Spike Pit">
+            <span class="tool-icon">🩸</span>
+            <span class="tool-name">Spike Pit</span>
+            <span class="tool-cost">3 pts</span>
+          </button>
+          <button class="tool-btn" data-tool="spawner_skeleton" title="Patrolling Skeleton Spawner">
+            <span class="tool-icon">💀</span>
+            <span class="tool-name">Skeleton</span>
+            <span class="tool-cost">15 pts</span>
+          </button>
+          <button class="tool-btn" data-tool="spawner_bat" title="Flying Blood Bat Spawner">
+            <span class="tool-icon">🦇</span>
+            <span class="tool-name">Blood Bat</span>
+            <span class="tool-cost">10 pts</span>
+          </button>
+          <button class="tool-btn" data-tool="trap_pendulum" title="Swinging Scythe Blade">
+            <span class="tool-icon">⚔️</span>
+            <span class="tool-name">Pendulum</span>
+            <span class="tool-cost">20 pts</span>
+          </button>
+          <button class="tool-btn" data-tool="spawn_point" title="Hero Entrance Location">
+            <span class="tool-icon">🚩</span>
+            <span class="tool-name">Spawn Pt</span>
+            <span class="tool-cost">0 pts</span>
+          </button>
+          <button class="tool-btn" data-tool="castle_core" title="Heart of Dracula Core Objective">
+            <span class="tool-icon">🫀</span>
+            <span class="tool-name">Castle Core</span>
+            <span class="tool-cost">Heart</span>
+          </button>
+          <button class="tool-btn" data-tool="eraser" title="Erase Tile or Monster">
+            <span class="tool-icon">🧹</span>
+            <span class="tool-name">Eraser</span>
+            <span class="tool-cost">Refund</span>
+          </button>
+        </div>
+
+        <!-- Management Actions -->
+        <div class="actions-row">
+          <div style="display: flex; gap: 8px;">
+            <button class="action-btn" id="btn-save-castle">💾 Save Castle</button>
+            <button class="action-btn" id="btn-reset-default">🔄 Reset Default</button>
+            <button class="action-btn" id="btn-export-json">📋 Export JSON</button>
+            <button class="action-btn" id="btn-import-json">📥 Import JSON</button>
+          </div>
+          <button class="action-btn validate-btn" id="btn-validate-run">
+            ⚔️ TEST RUN (PROOF OF VICTORY)
+          </button>
+        </div>
+      </div>
+
+      <!-- Virtual Mobile / Touch Controls Overlay -->
+      <div id="mobile-controls" class="mobile-controls">
+        <div class="virtual-dpad">
+          <button class="v-btn" id="v-left">◀</button>
+          <button class="v-btn" id="v-right">▶</button>
+        </div>
+        <div class="virtual-actions">
+          <button class="v-btn" id="v-sub" style="color: #ff99aa;">🗡️</button>
+          <button class="v-btn" id="v-dash" style="color: #38d9ff;">💨</button>
+          <button class="v-btn" id="v-attack" style="color: #ffd700;">⚔️</button>
+          <button class="v-btn" id="v-jump" style="color: #55ff88;">⬆️</button>
+        </div>
+      </div>
+
+      <!-- Action Key Hints Bar -->
+      <div id="key-hints-bar" class="key-hints-bar" style="display: none;">
+        <span><span class="key-tag">[A/D]</span> Move</span>
+        <span><span class="key-tag">[Space/W]</span> Jump (Double Jump enabled)</span>
+        <span><span class="key-tag">[X/Click]</span> Melee Slash</span>
+        <span><span class="key-tag">[Q/Shift]</span> Backdash (i-frames)</span>
+        <span><span class="key-tag">[C]</span> Sub-Weapon</span>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
